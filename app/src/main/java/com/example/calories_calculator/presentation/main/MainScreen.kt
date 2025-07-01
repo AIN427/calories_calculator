@@ -18,6 +18,8 @@ import com.example.calories_calculator.ui.theme.Calories_calculatorTheme
 @Composable
 fun MainScreen(
     presenter: MainPresenter,
+    onNavigateToFoodList: () -> Unit = {},
+    selectedFood: String? = null,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     viewModel: MainViewModel = hiltViewModel()
 ) {
@@ -57,9 +59,13 @@ fun MainScreen(
     ) {
         MainScreenContent(
             message = message,
+            selectedFood = selectedFood,
             contentPadding = contentPadding,
             onTestButtonClick = {
                 presenter.onTestButtonClicked()
+            },
+            onSelectFoodClick = {
+                onNavigateToFoodList()
             }
         )
     }
@@ -68,8 +74,10 @@ fun MainScreen(
 @Composable
 internal fun MainScreenContent(
     message: String,
+    selectedFood: String?,
     contentPadding: PaddingValues,
-    onTestButtonClick: () -> Unit
+    onTestButtonClick: () -> Unit,
+    onSelectFoodClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -95,6 +103,33 @@ internal fun MainScreenContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Button(
+            onClick = onSelectFoodClick,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Select Food")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        selectedFood?.let { food ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Text(
+                    text = "Selected: $food",
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
         if (message.isNotEmpty()) {
             Card(
                 modifier = Modifier.fillMaxWidth()
@@ -109,7 +144,22 @@ internal fun MainScreenContent(
     }
 }
 
-// MARK: - Preview Data
+@Composable
+internal fun MainScreenContentPreview(
+    message: String = "",
+    selectedFood: String? = null,
+    contentPadding: PaddingValues = PaddingValues(16.dp),
+    onTestButtonClick: () -> Unit = {},
+    onSelectFoodClick: () -> Unit = {}
+) {
+    MainScreenContent(
+        message = message,
+        selectedFood = selectedFood,
+        contentPadding = contentPadding,
+        onTestButtonClick = onTestButtonClick,
+        onSelectFoodClick = onSelectFoodClick
+    )
+}
 class MainScreenPreviewParameterProvider : PreviewParameterProvider<MainScreenPreviewData> {
     override val values = sequenceOf(
         MainScreenPreviewData(
@@ -145,11 +195,7 @@ data class MainScreenPreviewData(
 @Composable
 private fun MainScreenPreview() {
     Calories_calculatorTheme {
-        MainScreenContent(
-            message = "",
-            contentPadding = PaddingValues(16.dp),
-            onTestButtonClick = {}
-        )
+        MainScreenContentPreview()
     }
 }
 
@@ -161,10 +207,23 @@ private fun MainScreenPreview() {
 @Composable
 private fun MainScreenWithMessagePreview() {
     Calories_calculatorTheme {
-        MainScreenContent(
-            message = "Success: Hello from ViewModel!",
-            contentPadding = PaddingValues(16.dp),
-            onTestButtonClick = {}
+        MainScreenContentPreview(
+            message = "Success: Hello from ViewModel!"
+        )
+    }
+}
+
+@Preview(
+    name = "Main Screen - With Selected Food",
+    showBackground = true,
+    showSystemUi = true
+)
+@Composable
+private fun MainScreenWithSelectedFoodPreview() {
+    Calories_calculatorTheme {
+        MainScreenContentPreview(
+            selectedFood = "Apple (52 cal)",
+            message = "Food selected successfully!"
         )
     }
 }
@@ -177,10 +236,8 @@ private fun MainScreenWithMessagePreview() {
 @Composable
 private fun MainScreenErrorPreview() {
     Calories_calculatorTheme {
-        MainScreenContent(
-            message = "Error: Something went wrong",
-            contentPadding = PaddingValues(16.dp),
-            onTestButtonClick = {}
+        MainScreenContentPreview(
+            message = "Error: Something went wrong"
         )
     }
 }
@@ -205,10 +262,8 @@ private fun MainScreenAllStatesPreview(
                     CircularProgressIndicator()
                 }
             } else {
-                MainScreenContent(
-                    message = previewData.message,
-                    contentPadding = PaddingValues(16.dp),
-                    onTestButtonClick = {}
+                MainScreenContentPreview(
+                    message = previewData.message
                 )
             }
         }
@@ -223,10 +278,8 @@ private fun MainScreenAllStatesPreview(
 @Composable
 private fun MainScreenDarkPreview() {
     Calories_calculatorTheme {
-        MainScreenContent(
-            message = "Success: Hello from ViewModel!",
-            contentPadding = PaddingValues(16.dp),
-            onTestButtonClick = {}
+        MainScreenContentPreview(
+            message = "Success: Hello from ViewModel!"
         )
     }
 }
@@ -239,10 +292,8 @@ private fun MainScreenDarkPreview() {
 @Composable
 private fun MainScreenLandscapePreview() {
     Calories_calculatorTheme {
-        MainScreenContent(
-            message = "Success: Hello from ViewModel!",
-            contentPadding = PaddingValues(16.dp),
-            onTestButtonClick = {}
+        MainScreenContentPreview(
+            message = "Success: Hello from ViewModel!"
         )
     }
 }

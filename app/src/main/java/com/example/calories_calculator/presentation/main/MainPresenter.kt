@@ -2,10 +2,8 @@ package com.example.calories_calculator.presentation.main
 
 import androidx.lifecycle.ViewModelStoreOwner
 import com.example.calories_calculator.presentation.base.BasePresenter
-import dagger.hilt.android.scopes.ActivityScoped
 import javax.inject.Inject
 
-@ActivityScoped
 class MainPresenter @Inject constructor() :
     BasePresenter<MainContract.View>(),
     MainContract.Presenter {
