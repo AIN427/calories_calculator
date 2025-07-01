@@ -1,0 +1,67 @@
+# === Android Studio & IntelliJ ===
+*.iml
+.idea/
+.idea/**
+
+# === Build directories ===
+/build/
+/*/build/
+*.apk
+*.ap_
+*.aab
+
+# === Gradle ===
+.gradle/
+**/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
+gradle-app.setting
+gradle.properties
+local.properties
+
+# === Log & crash reports ===
+*.log
+*.hprof
+
+# === OS generated files ===
+.DS_Store
+Thumbs.db
+
+# === Jetpack Compose preview caches ===
+*.cachestore/
+*.snapshots/
+
+# === Kotlin/Java ===
+*.class
+*.jar
+*.war
+*.ear
+
+# === Android Studio Navigation ===
+.navigation/
+
+# === External tools ===
+.cxx/
+.externalNativeBuild/
+
+# === NDK ===
+obj/
+
+# === Generated files ===
+/captures/
+/outputs/
+/intermediates/
+/incremental/
+/tmp/
+
+# === Sign info ===
+*.jks
+*.keystore
+*.pem
+*.key
+
+# === Misc ===
+*.swp
+*.tmp
+*.orig
+*.bak
+*.rej
