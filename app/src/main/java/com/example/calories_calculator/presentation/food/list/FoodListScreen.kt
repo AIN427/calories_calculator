@@ -17,6 +17,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.example.calories_calculator.presentation.base.BaseScreen
+import com.example.calories_calculator.presentation.common.UiState
+import com.example.calories_calculator.presentation.common.data
+import com.example.calories_calculator.presentation.common.errorMessage
+import com.example.calories_calculator.presentation.common.isLoading
 import com.example.calories_calculator.presentation.food.model.FoodItem
 import com.example.calories_calculator.ui.theme.Calories_calculatorTheme
 
@@ -37,10 +41,8 @@ fun FoodListScreen(
         presenter.loadFoodList()
     }
 
-    // Наблюдаем за состоянием
-    val foodList by viewModel.foodList.observeAsState(emptyList())
-    val isLoading by viewModel.isLoading.observeAsState(false)
-    val error by viewModel.error.observeAsState()
+    // Наблюдаем за единым состоянием
+    val uiState by viewModel.uiState.observeAsState(UiState.Idle)
 
     // Создаем View для презентера
     val view = remember {
@@ -70,8 +72,8 @@ fun FoodListScreen(
 
     BaseScreen(
         presenter = presenter,
-        isLoading = isLoading,
-        error = error
+        isLoading = uiState.isLoading,
+        error = uiState.errorMessage
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // TopAppBar
@@ -87,13 +89,28 @@ fun FoodListScreen(
                 }
             )
 
-            // Content
-            FoodListContent(
-                foodList = foodList,
-                onFoodItemClick = { foodItem ->
-                    presenter.onFoodItemClicked(foodItem)
+            // Content - используем данные из состояния
+            when (uiState) {
+                is UiState.Success -> {
+                    uiState.data?.let {
+                        FoodListContent(
+                            foodList = it,
+                            onFoodItemClick = { foodItem ->
+                                presenter.onFoodItemClicked(foodItem)
+                            }
+                        )
+                    }
                 }
-            )
+                is UiState.Error -> {
+                    // Ошибка уже отображается в BaseScreen
+                }
+                is UiState.Loading -> {
+                    // Загрузка уже отображается в BaseScreen
+                }
+                is UiState.Idle -> {
+                    // Начальное состояние
+                }
+            }
         }
     }
 }

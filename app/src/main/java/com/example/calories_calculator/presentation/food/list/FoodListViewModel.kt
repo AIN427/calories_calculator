@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.calories_calculator.data.repository.FoodRepositoryImpl
 import com.example.calories_calculator.domain.usecase.GetFoodListUseCase
 import com.example.calories_calculator.presentation.base.BaseViewModel
+import com.example.calories_calculator.presentation.common.UiState
 import com.example.calories_calculator.presentation.food.mapper.toFoodItems
 import com.example.calories_calculator.presentation.food.model.FoodItem
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,42 +17,33 @@ import javax.inject.Inject
 @HiltViewModel
 class FoodListViewModel @Inject constructor(
     private val getFoodListUseCase: GetFoodListUseCase,
-    private val foodRepository: FoodRepositoryImpl // Для инициализации данных
+    private val foodRepository: FoodRepositoryImpl
 ) : BaseViewModel() {
 
-    private val _foodList = MutableLiveData<List<FoodItem>>()
-    val foodList: LiveData<List<FoodItem>> = _foodList
-
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
-
-    private val _error = MutableLiveData<String?>()
-    val error: LiveData<String?> = _error
+    // ✅ Одно состояние вместо нескольких LiveData
+    private val _uiState = MutableLiveData<UiState<List<FoodItem>>>(UiState.Idle)
+    val uiState: LiveData<UiState<List<FoodItem>>> = _uiState
 
     fun loadFoodList() {
         viewModelScope.launch {
-            _isLoading.postValue(true)
-            _error.postValue(null)
+            _uiState.postValue(UiState.Loading)
 
             try {
-                // Сначала пробуем загрузить из репозитория (с инициализацией)
+                // Инициализируем данные в репозитории
                 foodRepository.loadInitialData()
 
-                // Затем подписываемся на поток данных из Use Case
+                // Подписываемся на поток данных
                 getFoodListUseCase()
                     .catch { throwable ->
-                        _error.postValue("Failed to load food list: ${throwable.message}")
-                        _isLoading.postValue(false)
+                        _uiState.postValue(UiState.Error("Failed to load food list: ${throwable.message}"))
                     }
                     .collect { foods ->
                         val foodItems = foods.toFoodItems()
-                        _foodList.postValue(foodItems)
-                        _isLoading.postValue(false)
+                        _uiState.postValue(UiState.Success(foodItems))
                     }
 
             } catch (throwable: Throwable) {
-                _error.postValue("Failed to load food list: ${throwable.message}")
-                _isLoading.postValue(false)
+                _uiState.postValue(UiState.Error("Failed to load food list: ${throwable.message}"))
             }
         }
     }

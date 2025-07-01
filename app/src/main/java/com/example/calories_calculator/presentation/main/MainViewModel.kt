@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.calories_calculator.domain.repository.FoodRepository
 import com.example.calories_calculator.presentation.base.BaseViewModel
+import com.example.calories_calculator.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -12,25 +13,24 @@ class MainViewModel @Inject constructor(
     private val foodRepository: FoodRepository
 ) : BaseViewModel() {
 
-    private val _message = MutableLiveData<String>()
-    val message: LiveData<String> = _message
+    // ✅ UiState только для асинхронных операций
+    private val _testDataState = MutableLiveData<UiState<String>>(UiState.Idle)
+    val testDataState: LiveData<UiState<String>> = _testDataState
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
+    // ✅ Простое значение для выбранной еды
+    private val _selectedFood = MutableLiveData<String?>()
+    val selectedFood: LiveData<String?> = _selectedFood
 
     fun loadTestData() {
-        _isLoading.postValue(true)
+        _testDataState.postValue(UiState.Loading)
 
         launch(
             context = kotlinx.coroutines.Dispatchers.IO,
             onSuccess = { result: String ->
-                _message.postValue("Success: $result")
+                _testDataState.postValue(UiState.Success(result))
             },
             onError = { throwable ->
-                _message.postValue("Error: ${throwable.message}")
-            },
-            onComplete = {
-                _isLoading.postValue(false)
+                _testDataState.postValue(UiState.Error("Error: ${throwable.message}"))
             },
             runningBlock = {
                 // Имитация работы с данными
@@ -38,5 +38,9 @@ class MainViewModel @Inject constructor(
                 "Hello from ViewModel!"
             }
         )
+    }
+
+    fun setSelectedFood(food: String?) {
+        _selectedFood.postValue(food)
     }
 }

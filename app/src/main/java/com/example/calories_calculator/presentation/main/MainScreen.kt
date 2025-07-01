@@ -13,6 +13,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.example.calories_calculator.presentation.base.BaseScreen
+import com.example.calories_calculator.presentation.common.UiState
+import com.example.calories_calculator.presentation.common.getDisplayText
+import com.example.calories_calculator.presentation.common.isLoading
 import com.example.calories_calculator.ui.theme.Calories_calculatorTheme
 
 @Composable
@@ -30,9 +33,16 @@ fun MainScreen(
         presenter.initViewModel(viewModelStoreOwner!!)
     }
 
-    // Наблюдаем за состоянием
-    val message by viewModel.message.observeAsState("")
-    val isLoading by viewModel.isLoading.observeAsState(false)
+    // Наблюдаем за состояниями
+    val testDataState by viewModel.testDataState.observeAsState(UiState.Idle)
+    val selectedFoodFromViewModel by viewModel.selectedFood.observeAsState()
+
+    // Обновляем выбранную еду, если пришла новая
+    LaunchedEffect(selectedFood) {
+        if (selectedFood != null) {
+            viewModel.setSelectedFood(selectedFood)
+        }
+    }
 
     // Создаем View для презентера
     val view = remember {
@@ -55,11 +65,11 @@ fun MainScreen(
 
     BaseScreen(
         presenter = presenter,
-        isLoading = isLoading
+        isLoading = testDataState.isLoading
     ) {
         MainScreenContent(
-            message = message,
-            selectedFood = selectedFood,
+            message = testDataState.getDisplayText(),
+            selectedFood = selectedFoodFromViewModel,
             contentPadding = contentPadding,
             onTestButtonClick = {
                 presenter.onTestButtonClicked()
