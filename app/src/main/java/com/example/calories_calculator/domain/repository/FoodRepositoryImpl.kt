@@ -1,13 +1,15 @@
 package com.example.calories_calculator.data.repository
 
 import com.example.calories_calculator.data.local.dao.FoodDao
-import com.example.calories_calculator.data.local.entity.FoodEntity
+import com.example.calories_calculator.data.mapper.toDomainModel
+import com.example.calories_calculator.data.mapper.toDomainModels
+import com.example.calories_calculator.data.mapper.toEntity
+import com.example.calories_calculator.data.mapper.toEntities
 import com.example.calories_calculator.data.remote.api.CaloriesApiService
 import com.example.calories_calculator.domain.model.Food
 import com.example.calories_calculator.domain.repository.FoodRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,7 +27,7 @@ class FoodRepositoryImpl @Inject constructor(
                 // Если БД пустая, возвращаем моковые данные
                 getMockFoods()
             } else {
-                entities.map { it.toDomainModel() }
+                entities.toDomainModels() // ✅ Используем mapper
             }
         }
     }
@@ -38,7 +40,7 @@ class FoodRepositoryImpl @Inject constructor(
         val mockFoods = getMockFoods()
 
         // Сохраняем в БД для кеширования
-        foodDao.insertFoods(mockFoods.map { it.toEntity() })
+        foodDao.insertFoods(mockFoods.toEntities()) // ✅ Используем mapper
 
         return mockFoods
     }
@@ -59,49 +61,22 @@ class FoodRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getFoodById(id: Long): Food? {
-        return foodDao.getFoodById(id)?.toDomainModel()
+        return foodDao.getFoodById(id)?.toDomainModel() // ✅ Используем mapper
     }
 
     override suspend fun searchFoods(query: String): List<Food> {
-        return foodDao.searchFoods(query).map { it.toDomainModel() }
+        return foodDao.searchFoods(query).toDomainModels() // ✅ Используем mapper
     }
 
     override suspend fun insertFood(food: Food): Long {
-        return foodDao.insertFood(food.toEntity())
+        return foodDao.insertFood(food.toEntity()) // ✅ Используем mapper
     }
 
     override suspend fun updateFood(food: Food) {
-        foodDao.updateFood(food.toEntity())
+        foodDao.updateFood(food.toEntity()) // ✅ Используем mapper
     }
 
     override suspend fun deleteFood(food: Food) {
-        foodDao.deleteFood(food.toEntity())
+        foodDao.deleteFood(food.toEntity()) // ✅ Используем mapper
     }
-}
-
-// Маппинг между Entity и Domain моделями
-private fun FoodEntity.toDomainModel(): Food {
-    return Food(
-        id = id,
-        name = name,
-        caloriesPer100g = caloriesPer100g,
-        proteinPer100g = proteinPer100g,
-        carbsPer100g = carbsPer100g,
-        fatPer100g = fatPer100g,
-        imageUrl = imageUrl,
-        isFavorite = isFavorite
-    )
-}
-
-private fun Food.toEntity(): FoodEntity {
-    return FoodEntity(
-        id = id,
-        name = name,
-        caloriesPer100g = caloriesPer100g,
-        proteinPer100g = proteinPer100g,
-        carbsPer100g = carbsPer100g,
-        fatPer100g = fatPer100g,
-        imageUrl = imageUrl,
-        isFavorite = isFavorite
-    )
 }
