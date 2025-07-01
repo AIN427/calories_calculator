@@ -10,7 +10,6 @@ class FoodListPresenter @Inject constructor() :
     FoodListContract.Presenter {
 
     private lateinit var viewModel: FoodListViewModel
-    private var onFoodSelected: ((String) -> Unit)? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -20,10 +19,6 @@ class FoodListPresenter @Inject constructor() :
     fun initViewModel(viewModelStoreOwner: ViewModelStoreOwner) {
         viewModel = getViewModel(viewModelStoreOwner)
         observeViewModel()
-    }
-
-    fun setOnFoodSelectedCallback(callback: (String) -> Unit) {
-        onFoodSelected = callback
     }
 
     private fun observeViewModel() {
@@ -38,8 +33,9 @@ class FoodListPresenter @Inject constructor() :
     }
 
     override fun onFoodItemClicked(foodItem: FoodItem) {
-        // Передаем выбранную еду обратно
-        onFoodSelected?.invoke("${foodItem.name} (${foodItem.calories} cal)")
+        // ✅ Просто говорим View, что элемент выбран
+        // View сама решает что делать (навигация, обновление состояния и т.д.)
+        view?.onItemSelected(foodItem)
     }
 
     override fun onBackPressed() {

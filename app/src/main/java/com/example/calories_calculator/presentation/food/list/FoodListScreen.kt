@@ -37,7 +37,6 @@ fun FoodListScreen(
     // Инициализируем ViewModel в презентере
     LaunchedEffect(Unit) {
         presenter.initViewModel(viewModelStoreOwner!!)
-        presenter.setOnFoodSelectedCallback(onFoodSelected)
         presenter.loadFoodList()
     }
 
@@ -45,7 +44,7 @@ fun FoodListScreen(
     val uiState by viewModel.uiState.observeAsState(UiState.Idle)
 
     // Создаем View для презентера
-    val view = remember {
+    val view = remember(onFoodSelected) { // ✅ Добавили зависимость
         object : FoodListContract.View {
             override fun showFoodList(foods: List<FoodItem>) {
                 // В Compose обновляется через ViewModel
@@ -61,6 +60,12 @@ fun FoodListScreen(
 
             override fun navigateBack() {
                 onBackPressed()
+            }
+
+            override fun onItemSelected(foodItem: FoodItem) {
+                // ✅ View сама решает что делать с выбранным элементом
+                val selectedFoodString = "${foodItem.name} (${foodItem.calories} cal)"
+                onFoodSelected(selectedFoodString)
             }
         }
     }

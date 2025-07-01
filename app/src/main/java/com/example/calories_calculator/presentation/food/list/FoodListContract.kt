@@ -10,6 +10,7 @@ class FoodListContract {
         fun showLoading(isLoading: Boolean)
         fun showError(error: String)
         fun navigateBack()
+        fun onItemSelected(foodItem: FoodItem)
     }
 
     interface Presenter : BaseContract.Presenter<View> {
